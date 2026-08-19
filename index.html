@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="DECODE is a cross-platform multi-sensor SLAM dataset for GNSS-denied, constrained, and degenerate environments, containing 60 sequences collected on handheld, UGV, and drone platforms." />
+  <title>DECODE: A Cross-Platform Multi-Sensor SLAM Dataset</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="page">
+
+    <!-- =========================================================
+         HERO / TITLE
+    ========================================================== -->
+    <section class="hero">
+      <h1>DECODE: A Cross-Platform Multi-Sensor SLAM Dataset for GNSS-Denied, Constrained, and Degenerate Environments</h1>
+
+      <p class="authors">
+        <a href="#">Kuiyuan Zhang</a><sup>1</sup>,
+        <a href="#">Yukun Liu</a><sup>1</sup>,
+        <a href="#">Shouwan Gao</a><sup>1,2</sup>,
+        <a href="#">Pengpeng Chen</a><sup>1,2</sup>,
+        <a href="#">Xinhua Liu</a><sup>3</sup>,
+        <a href="#">Zhuo Song</a><sup>4</sup>,
+        <a href="#">Muhammad Khurram Khan</a><sup>5</sup>
+      </p>
+
+      <p class="affiliations">
+        <sup>1</sup>School of Computer Science and Technology / School of Artificial Intelligence, China University of Mining and Technology, Xuzhou 221116, China<br />
+        <sup>2</sup>Mine Digitization Engineering Research Center, Ministry of Education, Xuzhou 221116, China<br />
+        <sup>3</sup>School of Mechanical and Electrical Engineering, China University of Mining and Technology, Xuzhou 221116, China<br />
+        <sup>4</sup>Sangfor Technology, Shenzhen 518000, China<br />
+        <sup>5</sup>Center of Excellence in Information Assurance, King Saud University, Riyadh 11653, Saudi Arabia
+      </p>
+
+      <p class="affiliations">(Corresponding author: Pengpeng Chen)</p>
+
+      <nav class="top-links" aria-label="Project links">
+        <a href="#">Paper</a>
+        <a href="#">Development Toolkit</a>
+        <a href="#">arXiv</a>
+        <a href="#download">Download Data</a>
+        <a href="#benchmark">Online Benchmark</a>
+        <a href="#">Submit Benchmark Data</a>
+      </nav>
+    </section>
+
+    <!-- ABSTRACT -->
+    <section id="abstract">
+      <h2>Abstract</h2>
+      <p>Simultaneous localization and mapping (SLAM) in global navigation satellite system (GNSS)-denied environments remains challenging because of sensing degradation, geometric degeneracy, heterogeneous platforms, and limited computational resources. This paper presents DECODE, a cross-platform multi-sensor SLAM dataset for GNSS-denied, constrained, and degenerate environments. DECODE contains 60 sequences collected using handheld, unmanned ground vehicle (UGV), and drone platforms in several representative scenarios, including the indoor room, underground garage, long corridor, metro tunnel, and mine tunnel.</p>
+      <p>The sensing configurations integrate RGB-D and fisheye cameras, heterogeneous LiDAR sensors with spinning, optionally repetitive, and non-repetitive scanning patterns. To validate the utility of DECODE in advancing SLAM research, we evaluate state-of-the-art SLAM methods including visual-inertial, LiDAR-inertial, and LiDAR-inertial-visual solutions in terms of absolute trajectory error (ATE), relative trajectory error (RTE), and processing latency on both a high-performance server and an NVIDIA Jetson AGX Orin platform.</p>
+      <p>DECODE therefore provides a unified and challenging benchmark for robust SLAM, heterogeneous sensor fusion, cross-platform evaluation, and resource-constrained robotic deployment in complex underground environments. The complete dataset, including the ground-truth, calibration files, and sensor data, will be available at <a href="https://cumteiot.github.io/DECODE/">https://cumteiot.github.io/DECODE/</a>.</p>
+    </section>
+
+    <!-- SYSTEM OVERVIEW -->
+    <section id="system-overview">
+      <h2>System Overview</h2>
+
+      <p>DECODE is collected using three mobile platforms — a handheld device, an unmanned ground vehicle (UGV), and a drone — to support cross-platform multi-sensor data collection in GNSS-denied environments. Each platform is equipped with heterogeneous LiDAR sensors, RGB-D cameras, and built-in IMUs according to its motion characteristics, load capacity, and application requirements, targeting constrained scenarios such as indoor rooms, underground garages, corridors, metro tunnels, and mine tunnels.</p>
+
+      <object class="pdf-figure" data="assets/platform.pdf" type="application/pdf" style="height:420px">
+        <p><a href="assets/platform.pdf">Data-collection platforms (PDF)</a></p>
+      </object>
+      <p class="figure-caption">The three data-collection platforms used in DECODE: handheld, UGV, and drone.</p>
+
+      <p>The <strong>handheld platform</strong> is deployed across all scenarios and provides flexible, human-carried motion with complex trajectories and frequent viewpoint changes. It carries an Intel RealSense D455 RGB-D camera (global shutter, 1280&times;720, 30 Hz) together with two heterogeneous LiDAR sensors — LIVOX AVIA and LIVOX MID360 — and their built-in BMI088 / BMI055 IMUs (200 Hz).</p>
+      <p>The <strong>UGV platform</strong> benefits from higher payload capacity and smooth, stable motion. It is equipped with the RealSense D455, three LiDAR sensors (LIVOX AVIA, LIVOX MID360, and Ouster OS0-gen2-128, a 128-line spinning LiDAR with an InvenSense ICM-20948 IMU), enabling high-resolution geometric sensing and fine mapping.</p>
+      <p>The <strong>drone platform</strong> provides aerial viewpoints and three-dimensional motion patterns. It carries a lightweight LIVOX MID360, an Intel RealSense D435i RGB-D camera (rolling shutter, 640&times;480, 15 Hz), and an Intel RealSense T265 fisheye camera (global shutter, 848&times;800, 15 Hz) for wide-FOV visual observation under rapid motion.</p>
+
+      <h3>Sensor Clock Synchronization</h3>
+      <p>Within each device, LiDAR and inertial measurements are intrinsically time-correlated. For cross-modal synchronization between cameras and LiDAR, DECODE intentionally preserves the native asynchronous acquisition characteristics without hardware-level triggering or a shared clock. This design better reflects practical robotic deployments and supports research on asynchronous visual-LiDAR fusion, inter-sensor time-offset estimation, and robust cross-modal alignment.</p>
+
+      <h3>Calibration</h3>
+      <p>Camera intrinsics are estimated with the Kalibr toolbox. LiDAR-camera extrinsics are calibrated with FAST-Calib, LiDAR-IMU extrinsics with LI-Init, and camera-IMU extrinsics with Kalibr, providing accurate rigid-body transformations for multi-sensor fusion.</p>
+
+      <object class="pdf-figure" data="assets/calibration-handheld.pdf" type="application/pdf" style="height:340px">
+        <p><a href="assets/calibration-handheld.pdf">Camera-IMU calibration results (PDF)</a></p>
+      </object>
+      <p class="figure-caption">Representative camera-IMU calibration residuals and estimated biases for the handheld platform.</p>
+
+      <h3>Ground Truth</h3>
+      <p>To accommodate different scene scales and deployment conditions, DECODE uses two complementary ground-truth systems. A NOKOV Mars 1.3H motion-capture system (240 Hz, 0.2 mm accuracy) provides reference trajectories in bounded indoor scenes, while a SOUTH NTS-332R10 total station (up to 1000 m range, ~5 mm ranging error) is used for large-scale environments such as long corridors, underground garages, metro tunnels, and mine tunnels.</p>
+
+      <object class="pdf-figure" data="assets/groundtruth.pdf" type="application/pdf" style="height:360px">
+        <p><a href="assets/groundtruth.pdf">Ground-truth systems (PDF)</a></p>
+      </object>
+      <p class="figure-caption">Ground-truth systems used in DECODE: NOKOV Mars 1.3H motion capture and SOUTH NTS-332R10 total station.</p>
+    </section>
+
+    <!-- DATASET -->
+    <section id="dataset">
+      <h2>Dataset</h2>
+      <p>The DECODE dataset includes three essential attributes:</p>
+
+      <ul class="feature-list">
+        <li><strong>Cross-platform:</strong> data are collected on handheld, UGV, and drone platforms, enabling the analysis of algorithm adaptability across different motion modes, mounting configurations, and application scenarios.</li>
+        <li><strong>Multi-sensor:</strong> RGB-D and fisheye cameras, heterogeneous LiDAR sensors (spinning, optionally-repetitive, and non-repetitive), and built-in IMUs provide a unified testing foundation for visual, LiDAR, inertial, and fusion methods.</li>
+        <li><strong>GNSS-denied &amp; degenerate scenarios:</strong> underground tunnels, semi-enclosed spaces, and other constrained environments highlight challenges such as weak texture, low illumination, dynamic occlusion, dust, and geometric degradation.</li>
+      </ul>
+
+      <p>DECODE contains a total of <strong>60 data sequences</strong>, with an aggregate recording duration of approximately <strong>3.8 hours</strong> and a cumulative trajectory length of approximately <strong>3.3 km</strong>. Among them, 25 sequences are collected using the handheld platform, 18 using the UGV platform, and 17 using the drone platform, spanning five scenarios: the indoor room (10), underground garage (14), long corridor (15), metro tunnel (6), and mine tunnel (15).</p>
+    </section>
+
+    <!-- SCENARIOS -->
+    <section id="scenarios">
+      <h2>Scenarios</h2>
+
+      <object class="pdf-figure" data="assets/scenarios.pdf" type="application/pdf" style="height:420px">
+        <p><a href="assets/scenarios.pdf">Scenario illustration (PDF)</a></p>
+      </object>
+      <p class="figure-caption">Illustration of diverse scenarios with challenges such as low illumination, weak texture, and repetitive structure.</p>
+
+      <div class="scenario">
+        <h3>Indoor Room</h3>
+        <p>The indoor room sequences represent relatively enclosed environments, spanning both open laboratory-like spaces and rooms containing obstacles, equipment, and partitions. They provide baseline conditions for trajectory estimation, sensor fusion, and map reconstruction, and are useful for evaluating robustness to local occlusion, viewpoint changes, and constrained motion.</p>
+      </div>
+
+      <div class="scenario">
+        <h3>Underground Garage</h3>
+        <p>The underground garage sequences feature larger spatial scales, longer trajectories, and complex structural layouts with regularly arranged columns, parking lanes, walls, and vehicles. Repetitive structures produce perceptual aliasing, while uneven illumination and dynamic vehicles introduce occlusion, making these sequences suitable for evaluating long-term drift and robustness to repetitive structures.</p>
+      </div>
+
+      <div class="scenario">
+        <h3>Long Corridor</h3>
+        <p>The long-corridor sequences represent one of the most typical degenerate environments in DECODE, with elongated layouts, parallel walls, flat floors, repetitive doors, and very weak illumination. For visual methods, weak textures reduce feature reliability, while for LiDAR methods the parallel surfaces provide insufficient geometric constraints along the corridor axis, making these sequences ideal for evaluating cumulative drift and degeneracy handling.</p>
+      </div>
+
+      <div class="scenario">
+        <h3>Metro Tunnel</h3>
+        <p>The metro tunnel sequences represent large-scale linear underground infrastructure with railway tracks, curved linings, and limited illumination. Strong longitudinal repetition leads to insufficient pose constraints along the tunnel direction, imposing stringent requirements on long-distance localization, degeneracy-aware estimation, and loop-closure detection.</p>
+      </div>
+
+      <div class="scenario">
+        <h3>Mine Tunnel</h3>
+        <p>The mine tunnel sequences contain narrow passages, rough wall surfaces, irregular cross-sections, temporary equipment, and airborne dust. The simultaneous presence of visual degradation, geometric degeneracy, dust interference, and dynamic disturbances makes these sequences particularly valuable for evaluating the robustness and environmental adaptability of multi-sensor SLAM systems under realistic industrial conditions.</p>
+      </div>
+    </section>
+
+    <!-- DATA FORMAT -->
+    <section id="data-format">
+      <h2>Data format</h2>
+      <p>All sensor measurements are recorded using the Robot Operating System (ROS). Each ROS bag contains the original sensor topics of the corresponding platform, including LiDAR point clouds, inertial measurements, RGB images, depth images, and fisheye images. The dataset is organized into three main directories: <code>calibration_files</code>, <code>groundtruth</code>, and <code>sensor_data</code>. Each ground-truth trajectory is stored as a text file, while the raw sensor data is stored as a ROS bag file.</p>
+
+      <details class="tree" open>
+        <summary>DECODE/ (click to view file structure)</summary>
+<pre>DECODE/
+├── calibration_files/
+│   ├── handheld/            # D455 / AVIA / MID360 intrinsics &amp; extrinsics (YAML)
+│   ├── ugv/                 # D455 / AVIA / MID360 / OS0 intrinsics &amp; extrinsics (YAML)
+│   └── drone/               # D435i / T265 / MID360 intrinsics &amp; extrinsics (YAML)
+├── groundtruth/
+│   ├── indoor/              # MoCap 3-DoF trajectories (txt)
+│   ├── garage/              # total-station 3-DoF trajectories (txt)
+│   ├── corridor/
+│   ├── metro_tunnel/
+│   └── mine_tunnel/
+└── sensor_data/
+    ├── indoor/
+    │   ├── indoor_handheld_00.bag
+    │   ├── indoor_handheld_01.bag
+    │   └── ...
+    ├── garage/
+    ├── corridor/
+    ├── metro_tunnel/
+    └── mine_tunnel/</pre>
+      </details>
+
+      <object class="pdf-figure" data="assets/organize.pdf" type="application/pdf" style="height:420px">
+        <p><a href="assets/organize.pdf">File organization (PDF)</a></p>
+      </object>
+      <p class="figure-caption">File organization of the DECODE dataset.</p>
+
+      <p>The following table summarizes the ROS topics and sensor configurations for the different platforms.</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Device</th>
+              <th>Sensor</th>
+              <th>Message Type</th>
+              <th>Topic Name</th>
+              <th>Description</th>
+              <th>Frequency</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td rowspan="6">Handheld</td><td rowspan="2">LiDAR a (AVIA)</td><td>livox_ros_driver/CustomMsg</td><td>/livox/lidar</td><td>Raw LIVOX point cloud</td><td>10 Hz</td></tr>
+            <tr><td>sensor_msgs/Imu</td><td>/livox/imu</td><td>Raw IMU data (BMI088)</td><td>200 Hz</td></tr>
+            <tr><td rowspan="2">LiDAR b (MID360)</td><td>livox_ros_driver2/CustomMsg</td><td>/livox/lidar</td><td>Raw LIVOX point cloud</td><td>10 Hz</td></tr>
+            <tr><td>sensor_msgs/Imu</td><td>/livox/imu</td><td>Raw IMU data (ICM40609)</td><td>200 Hz</td></tr>
+            <tr><td rowspan="2">Camera a (D455)</td><td>sensor_msgs/CompressedImage</td><td>/camera/color/image_raw/compressed</td><td>Compressed RGB image</td><td>30 Hz</td></tr>
+            <tr><td>sensor_msgs/Image</td><td>/camera/aligned_depth_to_color/image_raw</td><td>Aligned raw depth image</td><td>30 Hz</td></tr>
+            <tr><td rowspan="6">UGV</td><td rowspan="2">LiDAR a (AVIA)</td><td>livox_ros_driver/CustomMsg</td><td>/livox/lidar</td><td>Raw LIVOX point cloud</td><td>10 Hz</td></tr>
+            <tr><td>sensor_msgs/Imu</td><td>/livox/imu</td><td>Raw IMU data (BMI088)</td><td>200 Hz</td></tr>
+            <tr><td rowspan="2">LiDAR c (OS0-128)</td><td>sensor_msgs/PointCloud2</td><td>/ouster/points</td><td>Raw Ouster point cloud</td><td>10 Hz</td></tr>
+            <tr><td>sensor_msgs/Imu</td><td>/ouster/imu</td><td>Raw IMU data (ICM-20948)</td><td>100 Hz</td></tr>
+            <tr><td rowspan="2">Camera a (D455)</td><td>sensor_msgs/CompressedImage</td><td>/camera/color/image_raw/compressed</td><td>Compressed RGB image</td><td>30 Hz</td></tr>
+            <tr><td>sensor_msgs/Image</td><td>/camera/aligned_depth_to_color/image_raw</td><td>Aligned raw depth image</td><td>30 Hz</td></tr>
+            <tr><td rowspan="6">Drone</td><td rowspan="2">LiDAR b (MID360)</td><td>livox_ros_driver2/CustomMsg</td><td>/livox/lidar</td><td>Raw LIVOX point cloud</td><td>10 Hz</td></tr>
+            <tr><td>sensor_msgs/Imu</td><td>/livox/imu</td><td>Raw IMU data (ICM40609)</td><td>200 Hz</td></tr>
+            <tr><td rowspan="2">Camera b (D435i)</td><td>sensor_msgs/CompressedImage</td><td>/d435i/color/image_raw/compressed</td><td>Compressed RGB image</td><td>15 Hz</td></tr>
+            <tr><td>sensor_msgs/Image</td><td>/d435i/aligned_depth_to_color/image_raw</td><td>Aligned raw depth image</td><td>15 Hz</td></tr>
+            <tr><td rowspan="2">Camera c (T265)</td><td>sensor_msgs/Image</td><td>/t265/fisheye1/image_raw</td><td>Left fisheye image</td><td>15 Hz</td></tr>
+            <tr><td>sensor_msgs/Image</td><td>/t265/fisheye2/image_raw</td><td>Right fisheye image</td><td>15 Hz</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- DOWNLOAD -->
+    <section id="download">
+      <h2>Download</h2>
+      <p>The complete dataset, including calibration files, ground-truth trajectories, and raw sensor data, will be released at <a href="https://cumteiot.github.io/DECODE/">https://cumteiot.github.io/DECODE/</a>. Download links will be provided upon release.</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Scenario</th>
+              <th>Platforms (#seq)</th>
+              <th>Total Size</th>
+              <th>Duration</th>
+              <th>Dist.</th>
+              <th>Difficulty</th>
+              <th>Rosbag</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Indoor Room</td>
+              <td>Handheld / UGV / Drone (10)</td>
+              <td>--</td>
+              <td>2091 s (34.9 min)</td>
+              <td>588 m</td>
+              <td>Normal / Lightless</td>
+              <td>Coming soon</td>
+            </tr>
+            <tr>
+              <td>Underground Garage</td>
+              <td>Handheld / UGV / Drone (14)</td>
+              <td>--</td>
+              <td>2935 s (48.9 min)</td>
+              <td>682 m</td>
+              <td>Normal</td>
+              <td>Coming soon</td>
+            </tr>
+            <tr>
+              <td>Long Corridor</td>
+              <td>Handheld / UGV / Drone (15)</td>
+              <td>--</td>
+              <td>3346 s (55.8 min)</td>
+              <td>727 m</td>
+              <td>Textureless / Lightless</td>
+              <td>Coming soon</td>
+            </tr>
+            <tr>
+              <td>Metro Tunnel</td>
+              <td>Handheld (6)</td>
+              <td>--</td>
+              <td>1831 s (30.5 min)</td>
+              <td>538 m</td>
+              <td>Lightless / Structureless</td>
+              <td>Coming soon</td>
+            </tr>
+            <tr>
+              <td>Mine Tunnel</td>
+              <td>Handheld / UGV / Drone (15)</td>
+              <td>--</td>
+              <td>3383 s (56.4 min)</td>
+              <td>755 m</td>
+              <td>Dust / Dynamic / Textureless</td>
+              <td>Coming soon</td>
+            </tr>
+            <tr>
+              <td><strong>Total</strong></td>
+              <td><strong>60 sequences</strong></td>
+              <td>--</td>
+              <td><strong>3.8 h</strong></td>
+              <td><strong>3.3 km</strong></td>
+              <td>--</td>
+              <td>Coming soon</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h5>The dataset will be available on <a href="https://cumteiot.github.io/DECODE/">https://cumteiot.github.io/DECODE/</a>.</h5>
+    </section>
+
+    <!-- DATA SEQUENCES -->
+    <section id="data-sequences">
+      <h2>Data Sequences</h2>
+
+      <h2 class="subsection-title">Absolute Trajectories</h2>
+      <p>Absolute trajectories of different SLAM methods are visualized per scenario. Each plot compares the estimated trajectories against the ground truth under representative methods.</p>
+
+      <h3>Indoor Room</h3>
+      <div class="trajectory-grid">
+        <article>
+          <h4>Indoor (sample 1)</h4>
+          <object class="pdf-figure" data="assets/traj-indoor-1.pdf" type="application/pdf" style="height:300px"></object>
+        </article>
+        <article>
+          <h4>Indoor (sample 2)</h4>
+          <object class="pdf-figure" data="assets/traj-indoor-2.pdf" type="application/pdf" style="height:300px"></object>
+        </article>
+      </div>
+
+      <h3>Underground Garage</h3>
+      <div class="trajectory-grid">
+        <article>
+          <h4>Garage (sample 1)</h4>
+          <object class="pdf-figure" data="assets/traj-garage-1.pdf" type="application/pdf" style="height:300px"></object>
+        </article>
+        <article>
+          <h4>Garage (sample 2)</h4>
+          <object class="pdf-figure" data="assets/traj-garage-2.pdf" type="application/pdf" style="height:300px"></object>
+        </article>
+      </div>
+
+      <h3>Long Corridor</h3>
+      <div class="trajectory-grid">
+        <article>
+          <h4>Corridor (sample 1)</h4>
+          <object class="pdf-figure" data="assets/traj-corridor-1.pdf" type="application/pdf" style="height:300px"></object>
+        </article>
+        <article>
+          <h4>Corridor (sample 2)</h4>
+          <object class="pdf-figure" data="assets/traj-corridor-2.pdf" type="application/pdf" style="height:300px"></object>
+        </article>
+      </div>
+
+      <h3>Metro Tunnel</h3>
+      <div class="trajectory-grid">
+        <article>
+          <h4>Metro Tunnel (sample 1)</h4>
+          <object class="pdf-figure" data="assets/traj-metro-1.pdf" type="application/pdf" style="height:300px"></object>
+        </article>
+        <article>
+          <h4>Metro Tunnel (sample 2)</h4>
+          <object class="pdf-figure" data="assets/traj-metro-2.pdf" type="application/pdf" style="height:300px"></object>
+        </article>
+      </div>
+
+      <h3>Mine Tunnel</h3>
+      <div class="trajectory-grid">
+        <article>
+          <h4>Mine Tunnel (sample 1)</h4>
+          <object class="pdf-figure" data="assets/traj-mine-1.pdf" type="application/pdf" style="height:300px"></object>
+        </article>
+        <article>
+          <h4>Mine Tunnel (sample 2)</h4>
+          <object class="pdf-figure" data="assets/traj-mine-2.pdf" type="application/pdf" style="height:300px"></object>
+        </article>
+      </div>
+    </section>
+
+    <!-- ONLINE BENCHMARK -->
+    <section id="benchmark">
+      <h2>Online Benchmark</h2>
+
+      <ol>
+        <li>The DECODE benchmark evaluates submitted SLAM methods on all 60 sequences using the EVO toolkit, reporting both absolute trajectory error (ATE) and relative trajectory error (RTE) as root mean square error (RMSE).</li>
+        <li>We provide author-tested results for six representative methods — VINS-Fusion, FAST-LIO2, R&sup3;LIVE, SR-LIVO, Ground-Fusion++, and FAST-LIVO2 — on both a high-performance server and an NVIDIA Jetson AGX Orin embedded platform.</li>
+        <li>Ground-truth trajectories remain hidden for future benchmark submissions to ensure a fair and reproducible comparison.</li>
+      </ol>
+
+      <p><strong>Sensor modalities used by the methods</strong></p>
+      <ul class="legend-list">
+        <li>▣ RGB-D Camera (RealSense D455 / D435i)</li>
+        <li>▣ Fisheye Camera (RealSense T265)</li>
+        <li>▣ Spinning LiDAR (Ouster OS0-gen2-128)</li>
+        <li>▣ Non-repetitive LiDAR (LIVOX AVIA / MID360)</li>
+        <li>▣ IMU</li>
+      </ul>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Submission Date</th>
+              <th>Method</th>
+              <th>Setting</th>
+              <th>Code</th>
+              <th>Error Report</th>
+              <th>Environment</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Author-tested</td>
+              <td>VINS-Fusion</td>
+              <td>Camera + IMU</td>
+              <td><a href="#">Code</a></td>
+              <td><a href="#">Report</a></td>
+              <td>Server / Jetson AGX Orin</td>
+            </tr>
+            <tr>
+              <td>Author-tested</td>
+              <td>FAST-LIO2</td>
+              <td>LiDAR + IMU</td>
+              <td><a href="#">Code</a></td>
+              <td><a href="#">Report</a></td>
+              <td>Server / Jetson AGX Orin</td>
+            </tr>
+            <tr>
+              <td>Author-tested</td>
+              <td>R&sup3;LIVE</td>
+              <td>LiDAR + IMU + Camera</td>
+              <td><a href="#">Code</a></td>
+              <td><a href="#">Report</a></td>
+              <td>Server / Jetson AGX Orin</td>
+            </tr>
+            <tr>
+              <td>Author-tested</td>
+              <td>SR-LIVO</td>
+              <td>LiDAR + IMU + Camera</td>
+              <td><a href="#">Code</a></td>
+              <td><a href="#">Report</a></td>
+              <td>Server / Jetson AGX Orin</td>
+            </tr>
+            <tr>
+              <td>Author-tested</td>
+              <td>Ground-Fusion++</td>
+              <td>LiDAR + IMU + Camera</td>
+              <td><a href="#">Code</a></td>
+              <td><a href="#">Report</a></td>
+              <td>Server / Jetson AGX Orin</td>
+            </tr>
+            <tr>
+              <td>Author-tested</td>
+              <td>FAST-LIVO2</td>
+              <td>LiDAR + IMU + Camera</td>
+              <td><a href="#">Code</a></td>
+              <td><a href="#">Report</a></td>
+              <td>Server / Jetson AGX Orin</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Benchmark Results</h3>
+      <p>Author-tested results on all sequences. Best and second-best results are highlighted in the accompanying tables of the paper.</p>
+
+      <div class="trajectory-grid">
+        <article>
+          <h4>ATE RMSE per LiDAR type</h4>
+          <object class="pdf-figure" data="assets/ate.pdf" type="application/pdf" style="height:320px"></object>
+        </article>
+        <article>
+          <h4>RTE RMSE per LiDAR type</h4>
+          <object class="pdf-figure" data="assets/rte.pdf" type="application/pdf" style="height:320px"></object>
+        </article>
+      </div>
+
+      <div class="trajectory-grid">
+        <article>
+          <h4>Processing latency (server)</h4>
+          <object class="pdf-figure" data="assets/latency-server.pdf" type="application/pdf" style="height:320px"></object>
+        </article>
+        <article>
+          <h4>Processing latency (Jetson)</h4>
+          <object class="pdf-figure" data="assets/latency-jetson.pdf" type="application/pdf" style="height:320px"></object>
+        </article>
+      </div>
+
+      <object class="pdf-figure" data="assets/mapping.pdf" type="application/pdf" style="height:420px">
+        <p><a href="assets/mapping.pdf">Mapping visualization (PDF)</a></p>
+      </object>
+      <p class="figure-caption">Visualization of mapping under different methods and scenarios.</p>
+    </section>
+
+    <!-- CITATION -->
+    <section id="citation">
+      <h2>Citation</h2>
+<pre><code>@misc{decode2026,
+  title        = {DECODE: A Cross-Platform Multi-Sensor SLAM Dataset for GNSS-Denied, Constrained, and Degenerate Environments},
+  author       = {Zhang, Kuiyuan and Liu, Yukun and Gao, Shouwan and Chen, Pengpeng and Liu, Xinhua and Song, Zhuo and Khan, Muhammad Khurram},
+  year         = {2026},
+  url          = {https://cumteiot.github.io/DECODE/}
+}</code></pre>
+    </section>
+
+    <footer>
+      <p>This page is the official dataset page of DECODE: A Cross-Platform Multi-Sensor SLAM Dataset for GNSS-Denied, Constrained, and Degenerate Environments.</p>
+    </footer>
+
+  </main>
+</body>
+</html>
